@@ -1,0 +1,88 @@
+.heading {
+
+    width: 60%;
+    margin: 40px auto;
+    text-align: center;
+    color: #e67e22;
+    background: #ecf0f1;
+    border: 2px solid #e67e22;
+    border-radius: 50px;
+
+}
+
+form {
+
+    width: 55%;
+    margin: 40px auto;
+    padding: 10px;
+    color: #e67e22;
+    background: #ecf0f1;
+    border: 1px solid #e67e22;;
+    border-radius: 10px;
+
+}
+
+
+
+.task_inp {
+
+    min-height: 15px;
+    width: 80%;
+    padding: 5px;
+    border: 1px solid #e67e22;
+}
+
+
+.task_btn {
+
+    min-height: 15px;
+    color: #e67e22;
+    background: #ecf0f1;
+    border: 2px solid #e67e22;
+    border-radius: 2px;
+    padding: 5px 10px;
+}
+
+table {
+
+    width: 55%;
+    margin: 30px auto;
+    border-collapse: collapse;
+}
+
+tr {
+
+    border-bottom: 1px solid #2c3e50;  
+}
+
+th {
+
+    font-size: 20px;
+    color:#2c3e50;
+}
+
+th,td {
+
+    border:none;
+    min-height: 30px;
+    padding: 2px;
+
+}
+
+tr:hover {
+
+    background: #f1c40f;
+}
+
+.task,.no,.delete {
+
+    text-align: center;
+}
+
+.delete a {
+    color: #ffffff;
+    background:#c0392b;
+    padding: 1px 6px;
+    border-radius: 5px;
+    text-decoration: none;
+}
