@@ -2,36 +2,61 @@
 
    //connecting to database
 
-  try{
+   if (isset($_GET['user_id'])) {
 
-   $db_name = "mysql:host=localhost;dbname=todo";
-   $username ="root";
-   $password ="test";
-
-
-   $conn = new PDO($db_name, $username, $password);
-
-    // echo "connected";
-
-
-// update 
-
-    if (isset($_GET['up_task']) && isset($_POST['update'])) {
-
-        $id = $_GET['up_task'];
-        $up_task = $_POST['task'];
-
-        $updateQuery = "UPDATE tasks SET task=? WHERE id=?";
-        $updt = $conn->prepare($updateQuery);
-        $updt->execute([$up_task,$id]);
-        header('location: todo.php');
-    }
-
-   }catch(PDOException $e){
-
-    echo "Error:".$e->getMessage();
+        $user_in = $_GET['user_id'];
    }
 
+   if (isset($_POST['update']) && !empty($_POST['task'])) {
+
+        $task_in = $_POST['task'];
+   }
+
+
+    class Connection {
+
+        public $pdo;
+
+        public function __construct($dbms,$dbnm) {
+
+            try{
+
+                $this->pdo = new PDO("$dbms:dbname=$dbnm;host=localhost", "root","test");
+                // echo "CONNECTION ESTABLISHED";
+
+            }catch(PDOException $e) {
+
+                die("NO CONNECTION !!! PLEASE CHECK CONNECTION");
+            }
+        }
+    }
+
+    class UI extends Connection{
+                
+        public $user_prop;
+        public $id;
+        public $task_prop;
+        
+
+        public function updateDB($user_param,$task_param) {
+            $this->user_prop = $user_param;
+            $this->task_prop = $task_param;
+
+            //update
+            if (isset($_GET['up_task']) && !empty($_POST['task'])) {
+                $this->id = $_GET['up_task'];
+
+                $dbUpdate = $this->pdo->prepare("UPDATE tasks SET task=:task WHERE id=:id");
+                $dbUpdate->bindParam(':task',$this->task_prop,PDO::PARAM_STR);
+                $dbUpdate->bindParam(':id',$this->id,PDO::PARAM_INT);
+                $dbUpdate->execute();
+                header("location: todo.php?user_id=$this->user_prop");
+            }
+        }
+    }
+
+    $ui = new UI('mysql','todo');
+    $ui->updateDB($user_in,$task_in);
 
 ?>
 
@@ -58,6 +83,7 @@
     <form action="<?php $_SERVER['PHP_SELF']?>" method="POST">
 
         <input type="text" name="task" id="" class="task_inp">
+
         <button type="submit" name="update" class="task_btn">Update Task</button>
 
     </form>

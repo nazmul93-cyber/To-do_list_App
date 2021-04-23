@@ -1,71 +1,87 @@
 <?php
 
-   //connecting to database
+    if(isset($_POST['add'])) {
 
-  try{
-
-   $db_name = "mysql:host=localhost;dbname=todo";
-   $username ="root";
-   $password ="test";
-
-
-   $conn = new PDO($db_name, $username, $password);
-
-    // echo "connected";
-
-
-// //   starting query using prepare  
-
-    
-
-// insertion
-
-    if ($_SERVER['REQUEST_METHOD'] == "POST"){
-
-        $task = $_REQUEST['task'];
+        $task_in = $_POST['task'];
     }
 
-    if (!empty($task)) {
+    if (isset($_GET['user_id'])) {
 
-        $insertQuery = "INSERT INTO tasks(task) VALUES(?)";
-        $insrt = $conn->prepare($insertQuery);
-        $insrt->execute([$task]);
-    
+        $user_in = $_GET['user_id'];
+    }
+
+    // setting up connection :
+    class Connection {
+
+        public $pdo;
+
+        public function __construct($dbms,$dbnm) {
+
+            try{
+
+                $this->pdo = new PDO("$dbms:dbname=$dbnm;host=localhost", "root","test");
+                // echo "CONNECTION ESTABLISHED";
+
+            }catch(PDOException $e) {
+
+                die("NO CONNECTION !!! PLEASE CHECK CONNECTION");
+            }
+        }
     }
 
 
-// selection - reading
+class User extends Connection {
 
-    $selectQuery = "SELECT * FROM tasks";
-    $slct = $conn->prepare($selectQuery);
-    $slct->execute();
+    public $task_prop;
+    public $user_prop;
+
+    public function insertDB($task_param,$user_param) {
+
+        $this->task_prop = $task_param;
+        $this->user_prop = $user_param;
+    
+        // insertion :
+        if (isset($_POST['add']) && !empty($_POST['task'])) {
+
+            $dbQuery = $this->pdo->prepare('INSERT INTO tasks(task, user_id) VALUES(:task, :userid)');
+
+            $dbQuery->bindParam(':task', $this->task_prop, PDO::PARAM_STR);
+            $dbQuery->bindParam(':userid', $this->user_prop, PDO::PARAM_STR);
+            $dbQuery->execute();  
+        }
+        
+
+    }
+
+}
+
+$user = new User('mysql', 'todo');
+
+$user->insertDB($task_in,$user_in);
+// $user->selectDB($user_in);
+
+
+
+    
+
 
 // deletion 
 
-    if(isset($_GET['del_task'])){
+    // if(isset($_GET['del_task'])){
 
-        $id = $_GET['del_task'];
+    //     $id = $_GET['del_task'];
 
-        $deleteQuery = "DELETE FROM tasks WHERE id=?";
-        $dlt = $conn->prepare($deleteQuery);
-        $dlt->execute([$id]);
-        header('location: todo.php');
-    }
-
-  
-    
-
-
-
-   }catch(PDOException $e){
-
-    echo "Error:".$e->getMessage();
-   }
+    //     $deleteQuery = "DELETE FROM tasks WHERE id=?";
+    //     $dlt = $conn->prepare($deleteQuery);
+    //     $dlt->execute([$id]);
+    //     header('location: todo.php');
+    // }
 
 
 ?>
 
- 
+
+
 
 
 <!DOCTYPE html>
@@ -88,12 +104,13 @@
     <form action="<?php $_SERVER['PHP_SELF']?>" method="POST">
         
         <?php
-            if (isset($_POST['add']) && empty($task)) { ?>
+            if (isset($_POST['add']) && empty($task_in)) { ?>
                 <p style="color:red;font-style: italic;"> please write something to add <p>
             
         <?php } ?>
 
         <input type="text" name="task" id="" class="task_inp">
+
         <button type="submit" name="add" class="task_btn">Add Task</button>
 
     </form>
@@ -102,7 +119,8 @@
 
 <!-- making table to read the tasks -->
 
-    <table>
+
+<table>
 
         <thead>
 
@@ -117,28 +135,77 @@
 
         <tbody>
         <?php 
+
+            class UI extends Connection{
+                
+                public $user_prop;
+                public $id;
+                
+
+                public function selectDB($user_param) {
+                    $this->user_prop = $user_param;
             
-            $i=1;
-            while($row=$slct->fetch(PDO::FETCH_ASSOC)) { ?>
+                    //selection :
+                    $dbSelect = $this->pdo->prepare("SELECT * FROM tasks WHERE user_id=:userid");
+                    $dbSelect->bindParam(':userid', $this->user_prop , PDO::PARAM_STR);
+                    $dbSelect->execute();
 
-                    <tr>
+                    //deletion
+                    if (isset($_GET['del_task'])) {
+                        $this->id = $_GET['del_task'];
 
-                        <td class="no"><?php echo $i; ?></td>
-                        <td class="task"><?php echo $row['task']; ?></td>
-                        <td class="delete"><a href='todo.php?del_task=<?php echo $row['id']; ?>'>x</a></td>
-                        <td style="text-align:center;"><a href='todo.update.php?up_task=<?php echo $row['id'];?>' style="text-decoration:none;color:white;background:blue;">^</a></td>
-                    </tr>
-
+                        $dbDelete = $this->pdo->prepare("DELETE FROM tasks WHERE id=:id");
+                        $dbDelete->bindParam(':id',$this->id,PDO::PARAM_INT);
+                        $dbDelete->execute();
+                        header("location: todo.php?user_id=$this->user_prop");
+                    }
                    
+
+
+
+                    $i=1;
+                    while($row = $dbSelect->fetch(PDO::FETCH_ASSOC)) { ?>
             
-           
-        <?php   $i++; } ?>
+                        <tr>
+
+                            <td class="no"><?php echo $i; ?></td>
+
+                            <td class="task"><?php echo $row['task']; ?></td>
+
+                            <td class="delete"><a href="todo.php?user_id=<?php echo $this->user_prop;?>&del_task=<?php echo $row['id']; ?>">x</a></td>
+
+                            <td style="text-align:center;"><a href="todo.update.php?user_id=<?php echo $this->user_prop;?>&up_task=<?php echo $row['id'];?>" style="text-decoration:none;color:white;background:blue;">^</a></td>
+
+                        </tr>
+
+                    <?php  $i++; }            // while loop ends here
+
+
+                    
+                      
+                    
+                    
+                }
+            }                  // class UI ends here
+            
+            
+            $ui = new UI('mysql','todo');
+            $ui->selectDB($user_in);
+            
+        ?>
+
+            
 
         </tbody>
     </table>
 
 
+
+
+
 </body>
 </html>
+
+
 
 
