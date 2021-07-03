@@ -1,5 +1,6 @@
-# todo.app
-A todo list using php and mysql with pdo prepare method and a little bit of css all redone in oop and added login requirements.
+# To-do list App
+<p>A simple to-do list using raw php code and mysql with pdo prepare method and a little bit of css </p>
+<p>Updated with OOP and custom authentication</p>
 
 ![ERD](ERD%20and%20related%20screenshots/ERD%20todo.png)
 ![REG](ERD%20and%20related%20screenshots/register.png)
